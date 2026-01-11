@@ -1,6 +1,6 @@
 import pygame
 from modos.leer.estado_leer import EstadoLeer
-from modos.leer.interfaz_leer import dibujar_interfaz_leer, manejar_botones_leer
+from modos.leer.interfaz_leer import dibujar_interfaz_leer, manejar_eventos_leer
 from modos.leer.logica_leer import manejar_click_tablero
 
 def modo_leer(pantalla):
@@ -15,6 +15,8 @@ def modo_leer(pantalla):
 
             if evento.type == pygame.MOUSEBUTTONDOWN:
                 x, y = evento.pos
+
+                # Primero comprobamos si se ha pulsado un botón
                 if manejar_botones_leer(estado, x, y):
                     ejecutando = False
                 else:
