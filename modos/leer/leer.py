@@ -1,26 +1,19 @@
 import pygame
 from modos.leer.estado_leer import EstadoLeer
 from modos.leer.interfaz_leer import dibujar_interfaz_leer, manejar_eventos_leer
-from modos.leer.logica_leer import manejar_click_tablero
 
 def modo_leer(pantalla):
     reloj = pygame.time.Clock()
     estado = EstadoLeer()
 
-    ejecutando = True
-    while ejecutando:
+    estado.pantalla = pantalla  # NECESARIO PARA LA VENTANA DE CORONACIÓN
+
+    salir = False
+    while not salir:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
-                ejecutando = False
-
-            if evento.type == pygame.MOUSEBUTTONDOWN:
-                x, y = evento.pos
-
-                # Primero comprobamos si se ha pulsado un botón
-                if manejar_botones_leer(estado, x, y):
-                    ejecutando = False
-                else:
-                    manejar_click_tablero(estado, x, y)
+                return
+            salir = manejar_eventos_leer(estado, evento)
 
         dibujar_interfaz_leer(pantalla, estado)
         pygame.display.flip()

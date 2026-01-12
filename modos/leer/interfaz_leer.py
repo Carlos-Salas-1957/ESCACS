@@ -7,13 +7,11 @@ from nucleo.constantes import (
 from nucleo.tablero import pixel_desde_casilla
 from modos.leer.logica_leer import manejar_click_tablero, deshacer, cambiar_color
 
-# Si no existen fuera, los fijamos aquí
 ALTO_TABLERO = 8 * TAM_CASILLA
 ANCHO_PANEL = 240
 
 piezas_img = cargar_piezas()
 
-# Layout panel
 ALT_NOMBRE = 64
 ALT_CAB = 32
 ALT_BOT = 64
@@ -23,7 +21,6 @@ Y_JUG = Y_CAB + ALT_CAB
 ALT_JUG = ALTO_TABLERO - Y_JUG - ALT_BOT
 Y_BOT = ALTO_TABLERO - ALT_BOT
 
-# Botones con coordenadas absolutas
 BOTON_UNDO  = pygame.Rect(ANCHO_TABLERO + 10,  Y_BOT + 12, 70, 40)
 BOTON_COLOR = pygame.Rect(ANCHO_TABLERO + 85,  Y_BOT + 12, 80, 40)
 BOTON_SALIR = pygame.Rect(ANCHO_TABLERO + 170, Y_BOT + 12, 70, 40)
@@ -137,3 +134,48 @@ def manejar_eventos_leer(estado, evento):
             manejar_click_tablero(estado, x, y)
 
     return False
+
+# ---------------------------------------------------------
+# VENTANA DE CORONACIÓN
+# ---------------------------------------------------------
+def ventana_coronacion(pantalla, color):
+    ancho = 300
+    alto = 150
+    x = (pantalla.get_width() - ancho) // 2
+    y = (pantalla.get_height() - alto) // 2
+
+    rect_popup = pygame.Rect(x, y, ancho, alto)
+
+    piezas = ["q", "r", "b", "n"]
+    botones = {}
+
+    for i, p in enumerate(piezas):
+        bx = x + 20 + i * 70
+        by = y + 50
+        botones[p] = pygame.Rect(bx, by, 64, 64)
+
+    while True:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                return None
+
+            if evento.type == pygame.MOUSEBUTTONDOWN:
+                mx, my = evento.pos
+                for p, rect in botones.items():
+                    if rect.collidepoint(mx, my):
+                        return p
+
+        pygame.draw.rect(pantalla, (240, 240, 240), rect_popup)
+        pygame.draw.rect(pantalla, (0, 0, 0), rect_popup, 3)
+
+        fuente = pygame.font.SysFont("Arial", 24)
+        txt = fuente.render("Elige pieza de coronación", True, (0, 0, 0))
+        pantalla.blit(txt, (x + 20, y + 10))
+
+        for p, rect in botones.items():
+            clave = color + p
+            img = piezas_img.get(clave)
+            if img:
+                pantalla.blit(img, rect.topleft)
+
+        pygame.display.flip()
