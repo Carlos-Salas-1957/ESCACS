@@ -1,181 +1,38 @@
 import pygame
-from nucleo.cargador_piezas import cargar_piezas
-from nucleo.constantes import (
-    TAM_CASILLA, COLOR_CLARO, COLOR_OSCURO, COLOR_FONDO_PANEL,
-    ANCHO_TABLERO
-)
-from nucleo.tablero import pixel_desde_casilla
-from modos.leer.logica_leer import manejar_click_tablero, deshacer, cambiar_color
+from nucleo.tablero import dibujar_tablero, dibujar_piezas
+from nucleo.panel_jugadas import dibujar_panel_jugadas
 
-ALTO_TABLERO = 8 * TAM_CASILLA
-ANCHO_PANEL = 240
-
-piezas_img = cargar_piezas()
-
-ALT_NOMBRE = 64
-ALT_CAB = 32
-ALT_BOT = 64
-Y_NOMBRE = 0
-Y_CAB = Y_NOMBRE + ALT_NOMBRE
-Y_JUG = Y_CAB + ALT_CAB
-ALT_JUG = ALTO_TABLERO - Y_JUG - ALT_BOT
-Y_BOT = ALTO_TABLERO - ALT_BOT
-
-BOTON_UNDO  = pygame.Rect(ANCHO_TABLERO + 10,  Y_BOT + 12, 70, 40)
-BOTON_COLOR = pygame.Rect(ANCHO_TABLERO + 85,  Y_BOT + 12, 80, 40)
-BOTON_SALIR = pygame.Rect(ANCHO_TABLERO + 170, Y_BOT + 12, 70, 40)
-
-COLOR_SELECCION = (255, 255, 0)
-
-def dibujar_tablero(pantalla):
-    colores = [COLOR_CLARO, COLOR_OSCURO]
-    for f in range(8):
-        for c in range(8):
-            pygame.draw.rect(
-                pantalla,
-                colores[(f + c) % 2],
-                (c * TAM_CASILLA, f * TAM_CASILLA, TAM_CASILLA, TAM_CASILLA)
-            )
-
-def dibujar_piezas(pantalla, estado):
-    for casilla, pieza in estado.posicion.items():
-        x, y = pixel_desde_casilla(casilla, estado.orientacion)
-        img = piezas_img.get(pieza)
-        if img:
-            pantalla.blit(img, (x, y))
-
-def dibujar_jugadas(pantalla, estado):
-    fuente = pygame.font.SysFont("Arial", 20)
-    x_num = ANCHO_TABLERO + 8
-    x_bl  = ANCHO_TABLERO + 40
-    x_ng  = ANCHO_TABLERO + 140
-    fila_h = 22
-    max_filas = ALT_JUG // fila_h
-    jug = estado.jugadas
-    ini = max(0, len(jug) - max_filas)
-    for i in range(ini, len(jug)):
-        num, bl, ng = jug[i]
-        y = Y_JUG + (i - ini) * fila_h + 2
-        pantalla.blit(fuente.render(f"{num:>3}.", True, (0, 0, 0)), (x_num, y))
-        pantalla.blit(fuente.render(bl, True, (0, 0, 0)), (x_bl, y))
-        pantalla.blit(fuente.render(ng, True, (0, 0, 0)), (x_ng, y))
-
-def dibujar_panel_lateral(pantalla, estado):
-    pygame.draw.rect(pantalla, COLOR_FONDO_PANEL,
-                     (ANCHO_TABLERO, 0, ANCHO_PANEL, ALTO_TABLERO))
-
-    f_tit = pygame.font.SysFont("Arial", 28)
-    f_cab = pygame.font.SysFont("Arial", 22)
-    f_btn = pygame.font.SysFont("Arial", 20)
-
-    pantalla.blit(f_tit.render("MODO LEER", True, (0, 0, 0)),
-                  (ANCHO_TABLERO + 20, Y_NOMBRE + 18))
-
-    pygame.draw.rect(pantalla, (210, 210, 210),
-                     (ANCHO_TABLERO, Y_CAB, ANCHO_PANEL, ALT_CAB))
-    pantalla.blit(f_cab.render("#", True, (0, 0, 0)),
-                  (ANCHO_TABLERO + 8, Y_CAB + 6))
-    pantalla.blit(f_cab.render("Blancas", True, (0, 0, 0)),
-                  (ANCHO_TABLERO + 40, Y_CAB + 6))
-    pantalla.blit(f_cab.render("Negras", True, (0, 0, 0)),
-                  (ANCHO_TABLERO + 140, Y_CAB + 6))
-
-    pygame.draw.rect(pantalla, (230, 230, 230),
-                     (ANCHO_TABLERO, Y_JUG, ANCHO_PANEL, ALT_JUG))
-    dibujar_jugadas(pantalla, estado)
-
-    pygame.draw.rect(pantalla, (200, 200, 200),
-                     (ANCHO_TABLERO, Y_BOT, ANCHO_PANEL, ALT_BOT))
-
-    pygame.draw.rect(pantalla, (180, 180, 180), BOTON_UNDO)
-    pygame.draw.rect(pantalla, (180, 180, 180), BOTON_COLOR)
-    pygame.draw.rect(pantalla, (180, 180, 180), BOTON_SALIR)
-
-    pantalla.blit(f_btn.render("UNDO", True, (0, 0, 0)),
-                  (BOTON_UNDO.x + 8, BOTON_UNDO.y + 10))
-    pantalla.blit(f_btn.render("COLOR", True, (0, 0, 0)),
-                  (BOTON_COLOR.x + 8, BOTON_COLOR.y + 10))
-    pantalla.blit(f_btn.render("SALIR", True, (0, 0, 0)),
-                  (BOTON_SALIR.x + 8, BOTON_SALIR.y + 10))
 
 def dibujar_interfaz_leer(pantalla, estado):
-    pantalla.fill(COLOR_FONDO_PANEL)
+    pantalla.fill((30, 30, 30))
+
+    # Tablero + piezas (tu versión)
     dibujar_tablero(pantalla)
-    dibujar_piezas(pantalla, estado)
+    dibujar_piezas(pantalla, estado.tablero)
 
-    if estado.ultima_jugada:
-        o, d = estado.ultima_jugada
-        for cas in (o, d):
-            x, y = pixel_desde_casilla(cas, estado.orientacion)
-            pygame.draw.rect(pantalla, (255, 200, 0),
-                             (x, y, TAM_CASILLA, TAM_CASILLA), 4)
+    # Panel lateral
+    dibujar_panel_lateral_leer(pantalla)
+    dibujar_panel_jugadas(pantalla, estado, 512, 80, 240, 480)
+    dibujar_botones_leer(pantalla)
 
-    if estado.seleccion:
-        x, y = pixel_desde_casilla(estado.seleccion, estado.orientacion)
-        pygame.draw.rect(pantalla, COLOR_SELECCION,
-                         (x, y, TAM_CASILLA, TAM_CASILLA), 4)
 
-    dibujar_panel_lateral(pantalla, estado)
+def dibujar_panel_lateral_leer(pantalla):
+    pygame.draw.rect(pantalla, (50, 50, 50), (512, 0, 240, 512))
 
-def manejar_eventos_leer(estado, evento):
-    if evento.type == pygame.MOUSEBUTTONDOWN:
-        x, y = evento.pos
+    fuente = pygame.font.SysFont("arial", 24)
+    texto = fuente.render("MODO LEER", True, (255, 255, 255))
+    pantalla.blit(texto, (512 + 16, 24))
 
-        if BOTON_UNDO.collidepoint(x, y):
-            deshacer(estado)
-            return False
-        if BOTON_COLOR.collidepoint(x, y):
-            cambiar_color(estado)
-            return False
-        if BOTON_SALIR.collidepoint(x, y):
-            return True
 
-        if x < ANCHO_TABLERO:
-            manejar_click_tablero(estado, x, y)
+def dibujar_botones_leer(pantalla):
+    fuente = pygame.font.SysFont("arial", 18)
 
-    return False
+    botones = [("COLOR", 0), ("DESHACER", 1), ("SALIR", 2)]
+    for texto, i in botones:
+        x = 512 + i * 80
+        y = 560
+        pygame.draw.rect(pantalla, (60, 60, 60), (x, y, 80, 50))
+        pygame.draw.rect(pantalla, (100, 100, 100), (x, y, 80, 50), 2)
 
-# ---------------------------------------------------------
-# VENTANA DE CORONACIÓN
-# ---------------------------------------------------------
-def ventana_coronacion(pantalla, color):
-    ancho = 300
-    alto = 150
-    x = (pantalla.get_width() - ancho) // 2
-    y = (pantalla.get_height() - alto) // 2
-
-    rect_popup = pygame.Rect(x, y, ancho, alto)
-
-    piezas = ["q", "r", "b", "n"]
-    botones = {}
-
-    for i, p in enumerate(piezas):
-        bx = x + 20 + i * 70
-        by = y + 50
-        botones[p] = pygame.Rect(bx, by, 64, 64)
-
-    while True:
-        for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
-                return None
-
-            if evento.type == pygame.MOUSEBUTTONDOWN:
-                mx, my = evento.pos
-                for p, rect in botones.items():
-                    if rect.collidepoint(mx, my):
-                        return p
-
-        pygame.draw.rect(pantalla, (240, 240, 240), rect_popup)
-        pygame.draw.rect(pantalla, (0, 0, 0), rect_popup, 3)
-
-        fuente = pygame.font.SysFont("Arial", 24)
-        txt = fuente.render("Elige pieza de coronación", True, (0, 0, 0))
-        pantalla.blit(txt, (x + 20, y + 10))
-
-        for p, rect in botones.items():
-            clave = color + p
-            img = piezas_img.get(clave)
-            if img:
-                pantalla.blit(img, rect.topleft)
-
-        pygame.display.flip()
+        txt = fuente.render(texto, True, (255, 255, 255))
+        pantalla.blit(txt, (x + 10, y + 14))

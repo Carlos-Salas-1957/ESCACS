@@ -1,63 +1,25 @@
 import pygame
-import sys
+from modos.menu.menu import ejecutar_menu
+from modos.leer.leer import ejecutar_leer
+from modos.estudiar.estudiar import ejecutar_estudiar
+from modos.reproducir.reproducir import ejecutar_reproducir
 
-from nucleo.constantes import *
-from modos.leer.leer import modo_leer
+pygame.init()
+pantalla = pygame.display.set_mode((752, 512))
+pygame.display.set_caption("ESCACS")
 
+modo = ejecutar_menu(pantalla)
 
-# ============================
-# INICIALIZACIÓN
-# ============================
+if modo == "leer":
+    ejecutar_leer(pantalla)
 
-def iniciar_pygame():
-    pygame.init()
-    pantalla = pygame.display.set_mode((ANCHO_VENTANA, ALTO_VENTANA))
-    pygame.display.set_caption("ESCACS")
-    return pantalla
+elif modo == "estudiar":
+    ejecutar_estudiar(pantalla)
 
+elif modo == "reproducir":
+    # Aquí REPRODUCIR necesita movimientos
+    # De momento, lista vacía o de prueba
+    movimientos = []
+    ejecutar_reproducir(pantalla, movimientos)
 
-# ============================
-# MENÚ PRINCIPAL
-# ============================
-
-def menu_principal(pantalla):
-    reloj = pygame.time.Clock()
-    fuente = pygame.font.SysFont("Arial", 36)
-
-    ejecutando = True
-    while ejecutando:
-        for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-
-            if evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_1:
-                    modo_leer(pantalla)     # ← ENTRAR EN MODO LEER
-                if evento.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
-
-        pantalla.fill((50, 50, 50))
-
-        texto1 = fuente.render("1 - Modo LEER", True, (255, 255, 255))
-        texto2 = fuente.render("ESC - Salir", True, (255, 255, 255))
-
-        pantalla.blit(texto1, (50, 100))
-        pantalla.blit(texto2, (50, 160))
-
-        pygame.display.flip()
-        reloj.tick(60)
-
-
-# ============================
-# PROGRAMA PRINCIPAL
-# ============================
-
-def main():
-    pantalla = iniciar_pygame()
-    menu_principal(pantalla)
-
-
-if __name__ == "__main__":
-    main()
+pygame.quit()

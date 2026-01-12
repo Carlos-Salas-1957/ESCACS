@@ -1,19 +1,18 @@
 import pygame
+import chess
+
 from modos.leer.estado_leer import EstadoLeer
-from modos.leer.interfaz_leer import dibujar_interfaz_leer, manejar_eventos_leer
+from modos.leer.interfaz_leer import dibujar_interfaz_leer
+from modos.leer.logica_leer import manejar_eventos_leer
 
-def modo_leer(pantalla):
+
+def ejecutar_leer(pantalla):
+    estado = EstadoLeer(chess.Board())
     reloj = pygame.time.Clock()
-    estado = EstadoLeer()
 
-    estado.pantalla = pantalla  # NECESARIO PARA LA VENTANA DE CORONACIÓN
-
-    salir = False
-    while not salir:
+    while estado.ejecutando:
         for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
-                return
-            salir = manejar_eventos_leer(estado, evento)
+            manejar_eventos_leer(evento, estado)
 
         dibujar_interfaz_leer(pantalla, estado)
         pygame.display.flip()
