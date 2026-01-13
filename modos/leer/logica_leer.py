@@ -1,28 +1,50 @@
 import pygame
+import chess
+from nucleo.coronacion import detectar_coronacion
+from nucleo.movimiento import mover_pieza
 
-def manejar_eventos_leer(evento, estado):
-    if evento.type == pygame.QUIT:
-        estado.ejecutando = False
+def procesar_click_leer(estado, fila, col):
+    if estado.coronando:
+        # Esperando selección de pieza
+        for i, rect in enumerate(estado.rects_coronacion):
+            if rect.collidepoint(col * 60, fila * 60):
+                tipo = [chess.QUEEN, chess.ROOK, chess.BISHOP, chess.KNIGHT][i]
+                movimiento = chess.Move(estado.origen_coronacion, estado.destino_coronacion, promotion=tipo)
+                mover_pieza(estado, movimiento)
+                estado.coronando = False
+                estado.rects_coronacion = []
+                estado.origen_coronacion = None
+                estado.destino_coronacion = None
+                estado.seleccion = None
+        return
 
-    if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
-        x, y = evento.pos
+    fila_real = 7 - fila
+    casilla = chess.square(col, fila_real)
 
-        # -------------------------------------------------
-        # BOTONES DEL MODO LEER (y = 560–640)
-        # -------------------------------------------------
-        if 560 <= y <= 640:
+    if estado.seleccion is None:
+        pieza = estado.tablero.piece_at(casilla)
+        if pieza and pieza.color == estado.tablero.turn:
+            estado.seleccion = casilla
+    else:
+        origen = estado.seleccion
+        destino = casilla
+        movimiento = chess.Move(from_square=origen, to_square=destino)
 
-            # COLOR (invertir tablero)
-            if 528 <= x < 528 + 70:
-                estado.tablero = estado.tablero.mirror()
+        if detectar_coronacion(estado.tablero, movimiento):
+            estado.coronando = True
+            estado.origen_coronacion = origen
+            estado.destino_coronacion = destino
+            estado.rects_coronacion = generar_rects_coronacion()
+        elif movimiento in estado.tablero.legal_moves:
+            mover_pieza(estado, movimiento)
 
-            # DESHACER
-            elif 528 + 80 <= x < 528 + 150:
-                if estado.indice >= 0:
-                    estado.tablero.pop()
-                    estado.indice -= 1
-                    estado.jugadas.pop()
+        estado.seleccion = None
 
-            # SALIR
-            elif 528 + 160 <= x < 528 + 230:
-                estado.ejecutando = False
+
+def generar_rects_coronacion():
+    # Cuatro rectángulos horizontales en el centro del tablero
+    base_x = 60 * 2
+    base_y = 60 * 3
+    ancho = 60
+    alto = 60
+    return [pygame.Rect(base_x + i * ancho, base_y, ancho, alto) for i in range(4)]

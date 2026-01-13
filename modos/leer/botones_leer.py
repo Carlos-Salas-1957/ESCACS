@@ -1,24 +1,50 @@
 import pygame
+from nucleo.constantes import ANCHO_TABLERO, ALTO_TABLERO
 
-def dibujar_botones_leer(pantalla):
-    fuente = pygame.font.SysFont("arial", 24)
 
-    # Panel lateral empieza en x = 512
-    x_panel = 512
-    y = 448
+def dibujar_botones_leer(pantalla, estado):
+    fuente = pygame.font.SysFont(None, 22)
 
-    # Tres botones repartidos horizontalmente
-    ancho_panel = 240
-    margen = 16
-    espacio_util = ancho_panel - margen * 2
-    ancho_boton = espacio_util // 3
+    x_base = ANCHO_TABLERO + 30
+    y_base = ALTO_TABLERO - 55
 
-    textos = ["COLOR", "DESHACER", "SALIR"]
+    # texto visible, nombre lógico, rectángulo
+    botones = [
+        ("Color", "color",     pygame.Rect(x_base,          y_base, 70, 35)),
+        ("Undo",  "deshacer",  pygame.Rect(x_base + 80,     y_base, 70, 35)),
+        ("Salir", "salir",     pygame.Rect(x_base + 160,    y_base, 70, 35)),
+    ]
 
-    for i, texto in enumerate(textos):
-        x = x_panel + margen + i * ancho_boton
-        pygame.draw.rect(pantalla, (80, 80, 80), (x, y, ancho_boton - 4, 64))
+    mouse = pygame.mouse.get_pos()
 
-        label = fuente.render(texto, True, (255, 255, 255))
-        pantalla.blit(label, (x + (ancho_boton - 4)//2 - label.get_width()//2,
-                              y + 20))
+    for texto, nombre, rect in botones:
+        color_fondo = (100, 100, 100) if rect.collidepoint(mouse) else (70, 70, 70)
+
+        pygame.draw.rect(pantalla, color_fondo, rect, border_radius=6)
+        pygame.draw.rect(pantalla, (220, 220, 220), rect, 2, border_radius=6)
+
+        render = fuente.render(texto, True, (255, 255, 255))
+        pantalla.blit(
+            render,
+            (
+                rect.x + (rect.width - render.get_width()) // 2,
+                rect.y + (rect.height - render.get_height()) // 2,
+            ),
+        )
+
+
+def detectar_click_boton(x, y):
+    x_base = ANCHO_TABLERO + 30
+    y_base = ALTO_TABLERO - 55
+
+    botones = {
+        "color":    pygame.Rect(x_base,          y_base, 70, 35),
+        "deshacer": pygame.Rect(x_base + 80,     y_base, 70, 35),
+        "salir":    pygame.Rect(x_base + 160,    y_base, 70, 35),
+    }
+
+    for nombre, rect in botones.items():
+        if rect.collidepoint(x, y):
+            return nombre
+
+    return None
